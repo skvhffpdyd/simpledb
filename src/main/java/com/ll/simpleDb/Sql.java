@@ -1,5 +1,7 @@
 package com.ll.simpleDb;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,21 +9,24 @@ import java.util.List;
 import java.util.Map;
 
 public class Sql {
-    private String sqlFormat;
 
-    private StringBuilder sqlBuilder;
+    private final SimpleDb simpleDb;
+    private final StringBuilder sqlBuilder;
 
-    public Sql() {
+    public Sql(SimpleDb simpleDb) {
         this.sqlBuilder = new StringBuilder();
+        this.simpleDb = simpleDb;
     }
 
     public Sql append(String sqlLine) {
-        this.sqlFormat = sqlLine;
+        this.sqlBuilder.append(sqlLine);
+        this.sqlBuilder.append(" ");
         return this;
     }
 
     public Sql append(String sqlLine, Object... args) {
-        this.sqlFormat = sqlLine;
+        this.sqlBuilder.append(sqlLine);
+        this.sqlBuilder.append(" ");
         return this;
     }
 
@@ -74,7 +79,6 @@ public class Sql {
         row3.put("modifiedDate", LocalDateTime.now());
         row3.put("isBlind", false);
 
-
         rows.add(row1);
         rows.add(row2);
         rows.add(row3);
@@ -108,11 +112,6 @@ public class Sql {
     }
 
     public Boolean selectBoolean() {
-        if("SELECT 1 = 1".equals(sqlFormat)) {
-            return true;
-        }
-        else{
-            return false;
-        }
+        return simpleDb.selectBoolean(sqlBuilder.toString());
     }
 }
