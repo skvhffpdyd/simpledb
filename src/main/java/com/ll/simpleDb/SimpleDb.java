@@ -88,6 +88,6 @@ public class SimpleDb {
     }
 
     public Sql genSql() {
-        return null;
+        return new Sql();
     }
 }
