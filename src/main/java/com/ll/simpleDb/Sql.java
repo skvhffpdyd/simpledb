@@ -1,21 +1,20 @@
 package com.ll.simpleDb;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Sql {
 
     private final SimpleDb simpleDb;
+    private final List<Object> params;
     private final StringBuilder sqlBuilder;
 
     public Sql(SimpleDb simpleDb) {
         this.sqlBuilder = new StringBuilder();
         this.simpleDb = simpleDb;
+        this.params = new ArrayList<>();
     }
 
     public Sql append(String sqlLine) {
@@ -25,85 +24,69 @@ public class Sql {
     }
 
     public Sql append(String sqlLine, Object... args) {
+        this.params.addAll(Arrays.stream(args).toList());
         this.sqlBuilder.append(sqlLine);
         this.sqlBuilder.append(" ");
         return this;
     }
 
     public long insert() {
-        return 1;
+        return simpleDb.insert(sqlBuilder.toString(), params);
     }
 
     public int update() {
-        return 3;
+        return simpleDb.update(sqlBuilder.toString(), params);
     }
 
     public int delete() {
-        return 2;
+        return simpleDb.delete(sqlBuilder.toString(), params);
+    }
+
+    public <T> List<T> selectRows(Class<T> cls) {
+        return simpleDb.selectRows(sqlBuilder.toString(), params, cls);
     }
 
     public List<Map<String, Object>> selectRows() {
-
-//        assertThat(articleRow.get("id")).isEqualTo(id);
-//        assertThat(articleRow.get("title")).isEqualTo("제목%d".formatted(id));
-//        assertThat(articleRow.get("body")).isEqualTo("내용%d".formatted(id));
-//        assertThat(articleRow.get("createdDate")).isInstanceOf(LocalDateTime.class);
-//        assertThat(articleRow.get("createdDate")).isNotNull();
-//        assertThat(articleRow.get("modifiedDate")).isInstanceOf(LocalDateTime.class);
-//        assertThat(articleRow.get("modifiedDate")).isNotNull();
-//        assertThat(articleRow.get("isBlind")).isEqualTo(false);
-
-        List<Map<String, Object>> rows = new ArrayList<>();
-
-        Map<String, Object> row1 = new HashMap<>();
-        row1.put("id", 1L);
-        row1.put("title", "제목1");
-        row1.put("body", "내용1");
-        row1.put("createdDate", LocalDateTime.now());
-        row1.put("modifiedDate", LocalDateTime.now());
-        row1.put("isBlind", false);
-
-        Map<String, Object> row2 = new HashMap<>();
-        row2.put("id", 2L);
-        row2.put("title", "제목2");
-        row2.put("body", "내용2");
-        row2.put("createdDate", LocalDateTime.now());
-        row2.put("modifiedDate", LocalDateTime.now());
-        row2.put("isBlind", false);
-
-        Map<String, Object> row3 = new HashMap<>();
-        row3.put("id", 3L);
-        row3.put("title", "제목3");
-        row3.put("body", "내용3");
-        row3.put("createdDate", LocalDateTime.now());
-        row3.put("modifiedDate", LocalDateTime.now());
-        row3.put("isBlind", false);
-
-        rows.add(row1);
-        rows.add(row2);
-        rows.add(row3);
-
-        return rows;
+        return simpleDb.selectRows(sqlBuilder.toString(), params);
     }
 
     public Map<String, Object> selectRow() {
+        return simpleDb.selectRow(sqlBuilder.toString(), params);
+    }
 
-        return simpleDb.selectRow(sqlBuilder.toString());
+    public <T> T selectRow(Class<T> cls) {
+        return simpleDb.selectRow(sqlBuilder.toString(), params, cls);
     }
 
     public LocalDateTime selectDatetime() {
-        return simpleDb.selectDatetime(sqlBuilder.toString());
+        return simpleDb.selectDatetime(sqlBuilder.toString(), params);
     }
 
     public Long selectLong() {
-        return simpleDb.selectLong(sqlBuilder.toString());
+        return simpleDb.selectLong(sqlBuilder.toString(), params);
     }
 
     public String selectString() {
-        return simpleDb.selectString(sqlBuilder.toString());
+        return simpleDb.selectString(sqlBuilder.toString(), params);
     }
 
     public Boolean selectBoolean() {
-        return simpleDb.selectBoolean(sqlBuilder.toString());
+        return simpleDb.selectBoolean(sqlBuilder.toString(), params);
+    }
+
+    public Sql appendIn(String sql, Object... args) {
+        String inCluase = Arrays.stream(args)
+                .map(o -> "?")
+                .collect(Collectors.joining(", "));
+
+        String replacedSql = sql.replaceAll("\\?", inCluase);
+        this.params.addAll(Arrays.stream(args).toList());
+        this.sqlBuilder.append(replacedSql);
+
+        return this;
+    }
+
+    public List<Long> selectLongs() {
+        return simpleDb.selectLongs(sqlBuilder.toString(), params);
     }
 }
